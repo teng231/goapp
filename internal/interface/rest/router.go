@@ -50,15 +50,17 @@ func (a *API) createRouter() *fiber.App {
 	app.Options("/*", func(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusOK)
 	})
-	apiRouter := app.Group("/ws")
+	apiRouter := app.Group("/api")
+	apiRouter.Get("/ping", handleSimpleHealthcheck)
+	wsRouter := app.Group("/ws")
 	// Middleware để nâng cấp lên WS
-	apiRouter.Use("/ws", func(c *fiber.Ctx) error {
+	wsRouter.Use("/ws", func(c *fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {
 			return c.Next()
 		}
 		return fiber.ErrUpgradeRequired
 	})
-	apiRouter.Get("/conn/:roomId", websocket.New(a.wsConnHandler))
+	wsRouter.Get("/conn/:roomId", websocket.New(a.wsConnHandler))
 
 	////////////////////////
 	// UNPROTECTED ROUTES //
@@ -74,4 +76,8 @@ func (a *API) createRouter() *fiber.App {
 	// protectedAPIRouter := app.Group("/api/")
 	// protectedAPIRouter.Get("/stack", a.handleAppStack)
 	return app
+}
+
+func handleSimpleHealthcheck(c *fiber.Ctx) error {
+	return c.SendString("pong")
 }
