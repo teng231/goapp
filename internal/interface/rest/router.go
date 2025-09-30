@@ -3,6 +3,7 @@ package rest
 import (
 	"sync"
 	"teng231/goapp/internal/app"
+	"teng231/goapp/internal/domain"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,11 +18,11 @@ type API struct {
 	router     *fiber.App
 	wsConn     map[string]*websocket.Conn
 	mt         sync.Mutex
-	LiveHubApp *app.LiveCommentApp
+	liveHubApp *app.LiveCommentApp
 }
 
 func New(hub *app.LiveCommentApp) *API {
-	api := &API{mt: sync.Mutex{}, LiveHubApp: hub, wsConn: make(map[string]*websocket.Conn)}
+	api := &API{mt: sync.Mutex{}, liveHubApp: hub, wsConn: make(map[string]*websocket.Conn)}
 	api.router = api.createRouter()
 	return api
 }
@@ -52,9 +53,10 @@ func (a *API) createRouter() *fiber.App {
 	})
 	apiRouter := app.Group("/api")
 	apiRouter.Get("/ping", handleSimpleHealthcheck)
+	apiRouter.Post("/cart", a.handleAddCartItem)
 	wsRouter := app.Group("/ws")
 	// Middleware để nâng cấp lên WS
-	wsRouter.Use("/ws", func(c *fiber.Ctx) error {
+	wsRouter.Use("/conn/:roomId", func(c *fiber.Ctx) error {
 		if websocket.IsWebSocketUpgrade(c) {
 			return c.Next()
 		}
@@ -80,4 +82,18 @@ func (a *API) createRouter() *fiber.App {
 
 func handleSimpleHealthcheck(c *fiber.Ctx) error {
 	return c.SendString("pong")
+}
+func (a *API) handleAddCartItem(c *fiber.Ctx) error {
+	var comment *domain.Comment
+	if err := c.BodyParser(&comment); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
+	}
+	if comment.Username == "" || comment.Message == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Username and message are required"})
+	}
+	if err := a.liveHubApp.AppendSheet(c.Context(), comment); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to append comment"})
+	}
+	return c.SendString("pong")
+
 }

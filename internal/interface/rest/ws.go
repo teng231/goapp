@@ -43,9 +43,9 @@ func (a *API) wsConnHandler(conn *websocket.Conn) {
 		delete(a.wsConn, roomId)
 		a.mt.Unlock()
 		log.Printf("Client %s disconnected", conn.RemoteAddr())
-		a.LiveHubApp.Close(context.Background(), roomId)
+		a.liveHubApp.Close(context.Background(), roomId)
 	}()
-	cEvent := a.LiveHubApp.Register(ctx, roomId)
+	cEvent := a.liveHubApp.Register(ctx, roomId)
 	go func() {
 		for {
 			event := <-cEvent
