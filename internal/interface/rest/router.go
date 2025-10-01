@@ -38,7 +38,7 @@ func (a *API) createRouter() *fiber.App {
 		WriteTimeout: 3 * time.Minute,
 	})
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "http://localhost:8081,http://localhost:5173",
+		AllowOrigins:     "*",
 		AllowCredentials: true,
 		ExposeHeaders:    "Content-Length,Content-Range",
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS,HEAD", // Allowed methods

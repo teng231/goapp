@@ -51,6 +51,7 @@ func (a *API) wsConnHandler(conn *websocket.Conn) {
 			event := <-cEvent
 			switch e := event.(type) {
 			case gotiktoklive.ChatEvent:
+				e.User.Badge = nil
 				dat, _ := json.Marshal(e)
 				err := conn.WriteMessage(websocket.TextMessage, dat)
 				if err != nil {
