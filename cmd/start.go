@@ -22,6 +22,7 @@ func StartCLI(cmd *cobra.Command, args []string) {
 	}
 
 	key := os.Getenv("CREDENTIALS_KEY")
+	log.Printf("CREDENTIALS_KEY: %s", key)
 	credential, err := crypt.DecryptAES_CBC_Base64(cred, []byte(key))
 	if err != nil {
 		log.Fatalf("DecryptAES_CBC_Base64 error: %v", err)

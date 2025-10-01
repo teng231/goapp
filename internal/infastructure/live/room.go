@@ -22,7 +22,6 @@ type Room struct {
 	UserID string // username TikTok
 	Status string // connected / disconnected
 	mu     sync.Mutex
-	ctx    context.Context
 }
 
 func (r *Room) Connect() error {
@@ -49,7 +48,7 @@ func (r *Room) Disconnect() error {
 	r.Live.Close()
 	r.Live = nil
 	r.Status = "disconnected"
-	r.ctx.Done()
+	// r.ctx.Done()
 	return nil
 }
 func (r *Room) Event(ctx context.Context, newEv chan<- gotiktoklive.Event) {
@@ -61,13 +60,13 @@ func (r *Room) Event(ctx context.Context, newEv chan<- gotiktoklive.Event) {
 	}
 	events := r.Live.Events
 	user := r.UserID
-	r.ctx = ctx
 	r.mu.Unlock()
 	for {
 		select {
 		case <-ctx.Done():
 			// context đã bị hủy hoặc hết hạn
 			fmt.Printf("[User %s] Event listener canceled: %v\n", user, ctx.Err())
+			close(newEv)
 			return
 		case ev, ok := <-events:
 			if !ok {
