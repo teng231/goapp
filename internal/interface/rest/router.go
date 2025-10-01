@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"strings"
 	"sync"
 	"teng231/goapp/internal/app"
 	"teng231/goapp/internal/domain"
@@ -31,6 +32,23 @@ func (a *API) Router() *fiber.App {
 	return a.router
 }
 
+func isAllowedOrigin(origin string) bool {
+	if origin == "" {
+		return false
+	}
+	// Lowercase để so sánh không phân biệt hoa/thường
+	o := strings.ToLower(origin)
+	// Cho phép nếu chứa "localhost"
+	if strings.Contains(o, "localhost") {
+		return true
+	}
+	// Cho phép nếu chứa "tikcart"
+	if strings.Contains(o, "tikcart") {
+		return true
+	}
+	return false
+}
+
 func (a *API) createRouter() *fiber.App {
 	app := fiber.New(fiber.Config{
 		Network:      fiber.NetworkTCP,
@@ -38,7 +56,7 @@ func (a *API) createRouter() *fiber.App {
 		WriteTimeout: 3 * time.Minute,
 	})
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "*",
+		AllowOriginsFunc: isAllowedOrigin,
 		AllowCredentials: true,
 		ExposeHeaders:    "Content-Length,Content-Range",
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS,HEAD", // Allowed methods
