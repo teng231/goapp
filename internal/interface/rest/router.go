@@ -106,7 +106,7 @@ func (a *API) handleAddCartItem(c *fiber.Ctx) error {
 	if err := c.BodyParser(&comment); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request payload"})
 	}
-	if comment.Username == "" || comment.Message == "" {
+	if comment.Username == "" || comment.Comment == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Username and message are required"})
 	}
 	if err := a.liveHubApp.AppendSheet(c.Context(), comment); err != nil {

@@ -61,7 +61,7 @@ func (s *sheetService) AppendComment(c *domain.Comment) error {
 
 	if userRow == -1 {
 		// Username chưa có -> thêm dòng mới
-		newRow := []interface{}{c.Username, c.Message}
+		newRow := []interface{}{c.Username, c.Comment}
 		_, err = s.srv.Spreadsheets.Values.Append(s.spreadsheetID, s.sheetName+"!A:B", &sheets.ValueRange{
 			Values: [][]interface{}{newRow},
 		}).ValueInputOption("RAW").Do()
@@ -77,7 +77,7 @@ func (s *sheetService) AppendComment(c *domain.Comment) error {
 	col := len(row) + 1 // cột tiếp theo
 	cell := fmt.Sprintf("%s!%s%d", s.sheetName, colToLetter(col), userRow)
 	_, err = s.srv.Spreadsheets.Values.Update(s.spreadsheetID, cell, &sheets.ValueRange{
-		Values: [][]interface{}{{c.Message}},
+		Values: [][]interface{}{{c.Comment}},
 	}).ValueInputOption("RAW").Do()
 	if err != nil {
 		return fmt.Errorf("unable to update cell: %v", err)

@@ -2,5 +2,5 @@ package domain
 
 type Comment struct {
 	Username string `json:"username"`
-	Message  string `json:"message"`
+	Comment  string `json:"comment"`
 }
